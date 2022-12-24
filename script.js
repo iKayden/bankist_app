@@ -1,10 +1,5 @@
 'use strict';
-
-/////////////////////////////////////////////////
-/////////////////////////////////////////////////
-// BANKIST APP
-
-// Data
+// Mockup Data
 const account1 = {
   owner: 'Jonas Schmedtmann',
   movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
@@ -35,7 +30,7 @@ const account4 = {
 
 const accounts = [account1, account2, account3, account4];
 
-// Elements
+// DOM Elements
 const labelWelcome = document.querySelector('.welcome');
 const labelDate = document.querySelector('.date');
 const labelBalance = document.querySelector('.balance__value');
@@ -61,29 +56,25 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
-/////////////////////////////////////////////////
-/////////////////////////////////////////////////
-// LECTURES
+const displayMovements = function(movements) {
+  movements.forEach((move, i) => {
+    const moveType = move > 0 ? "deposit" : "withdrawal";
 
-const currencies = new Map([
-  ['USD', 'United States dollar'],
-  ['EUR', 'Euro'],
-  ['GBP', 'Pound sterling'],
-]);
+    const html = `
+    <div class="movements__row">
+      <div class="movements__type movements__type--${moveType}">${i + 1} ${moveType}</div>
+        <div class="movements__value">${move}€</div>
+    </div>
+    <div class="movements__row">
+      <div class="movements__type movements__type--withdrawal">
+        1 withdrawal
+      </div>
+      <div class="movements__date">24/01/2037</div>
+      <div class="movements__value">-378€</div>
+    </div>
+  `;
 
-const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
-
-/////////////////////////////////////////////////
-let arr = ["a", "b", "c", "d", "e"];
-// SLICE - makes a copy without mutating an array
-// console.log(arr.slice(1, -2));
-// console.log(arr.slice());
-
-// SPLICE - mutates the array
-// console.log(arr.splice(2));
-// console.log(arr.splice(1, 2));
-// console.log(arr.splice(-1));
-// console.log(arr);
-
-// REVERSE mutates the original array
-// console.log('arr.reverse()', arr.reverse());
+    containerMovements.insertAdjacentHTML("afterbegin", html);
+  });
+};
+displayMovements(account1.movements);
