@@ -74,14 +74,25 @@ const displayMovements = function(movements) {
 displayMovements(account1.movements);
 
 const createUsernames = (accs) =>
-  accs
-    .forEach(acc =>
-      acc.username =
+  accs.forEach(
+    acc => acc.username =
       acc.owner
         .toUpperCase()
         .split(" ")
         .map(el => el[0])
         .join("")
-    );
+  );
 createUsernames(accounts);
-console.log(accounts);
+
+function moneyDisplayFormatter(n, currency) {
+  return currency + n.toFixed(2).replace(/./g, function(c, i, a) {
+    return i > 0 && c !== "." && (a.length - i) % 3 === 0 ? "," + c : c;
+  });
+}
+
+const countBalance = (moves) => {
+  const balance = moves.reduce((acc, curr) => acc + curr, 0);
+  labelBalance.textContent = `${moneyDisplayFormatter(balance, "€ ")}`;
+  return balance;
+};
+countBalance(account1.movements);
