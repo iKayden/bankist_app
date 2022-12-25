@@ -1,5 +1,11 @@
 'use strict';
 // Mockup Data
+const test = {
+  owner: '1 1',
+  movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
+  interestRate: 1.2, // %
+  pin: 1111,
+};
 const account1 = {
   owner: 'Jonas Schmedtmann',
   movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
@@ -28,7 +34,7 @@ const account4 = {
   pin: 4444,
 };
 
-const accounts = [account1, account2, account3, account4];
+const accounts = [test, account1, account2, account3, account4];
 
 // DOM Elements
 const labelWelcome = document.querySelector('.welcome');
@@ -90,10 +96,9 @@ function moneyDisplayFormatter(n, currency) {
   });
 }
 
-const countBalance = (moves) => {
-  const balance = moves.reduce((acc, curr) => acc + curr, 0);
-  labelBalance.textContent = `${moneyDisplayFormatter(balance, "€ ")}`;
-  return balance;
+const countBalance = (acc) => {
+  acc.balance = acc.movements.reduce((acc, curr) => acc + curr, 0);
+  labelBalance.textContent = `${moneyDisplayFormatter(acc.balance, "€ ")}`;
 };
 
 
@@ -117,6 +122,15 @@ const calcDisplaySum = (account) => {
   labelSumInterest.textContent = `${moneyDisplayFormatter(interest, "€ ")}`;
 };
 
+const updateUi = (acc) => {
+  // Display movements
+  displayMovements(acc.movements);
+  //Display balance
+  countBalance(acc);
+  // Display summary
+  calcDisplaySum(acc);
+};
+
 
 
 // Login event handler
@@ -134,12 +148,34 @@ btnLogin.addEventListener("click", (e) => {
     // Display UI and message
     labelWelcome.textContent = `Welcome back, ${currentAccount.owner.split(" ")[0]}`;
     containerApp.style.opacity = 100;
-    // Display movements
-    displayMovements(currentAccount.movements);
-    //Display balance
-    countBalance(currentAccount.movements);
-    // Display summary
-    calcDisplaySum(currentAccount);
+    //refresh interface
+    updateUi(currentAccount);
+
+
+
   }
+});
+
+// Money Transfer handler
+btnTransfer.addEventListener("click", function(e) {
+  e.preventDefault();
+  const amount = Number(inputTransferAmount.value);
+  const receiver = accounts.find(acc => acc.username === inputTransferTo.value);
+  // Pre Transfer validation
+  if (amount > 0 &&
+    receiver &&
+    currentAccount.balance >= amount &&
+    receiver?.username !== currentAccount.username
+  ) {
+    // Proceeding with the transfer
+    currentAccount.movements.push(-amount);
+    receiver.movements.push(amount);
+    updateUi(currentAccount);
+
+  }
+  //clean up inputs and unfocus last input
+  inputTransferTo.value = "";
+  inputTransferAmount.value = "";
+  inputTransferAmount.blur();
 
 });
