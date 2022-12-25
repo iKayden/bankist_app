@@ -96,3 +96,21 @@ const countBalance = (moves) => {
   return balance;
 };
 countBalance(account1.movements);
+
+const calcDisplaySum = (movements) => {
+  const incomes = movements
+    .filter(move => move > 0)
+    .reduce((acc, move) => acc + move, 0);
+  labelSumIn.textContent = `${moneyDisplayFormatter(incomes, "€ ")}`;
+  const outcomes = movements
+    .filter(move => move < 0)
+    .reduce((acc, move) => acc + move, 0);
+  labelSumOut.textContent = `${moneyDisplayFormatter(Math.abs(outcomes), "€ ")}`;
+  const interest = movements
+    .filter(move => move > 0)
+    .map(deposit => deposit * 1.2 / 100)
+    .filter(int => int >= 1)
+    .reduce((acc, int) => acc + int, 0);
+  labelSumInterest.textContent = `${moneyDisplayFormatter(interest, "€ ")}`;
+};
+calcDisplaySum(account1.movements);
