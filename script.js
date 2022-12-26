@@ -62,6 +62,15 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
+function moneyDisplayFormatter(n, currency) {
+  return currency + n.toFixed(2).replace(/./g, function(c, i, a) {
+    console.log("c", c);
+    console.log("i", i);
+    console.log("a", a);
+    return i > 0 && c !== "." && (a.length - i) % 3 === 0 ? "," + c : c;
+  });
+}
+
 const displayMovements = function(movements, sort = false) {
   containerMovements.innerHTML = "";
   const moves = sort ? movements.slice().sort((a, b) => a - b) : movements;
@@ -71,7 +80,7 @@ const displayMovements = function(movements, sort = false) {
     const html = `
     <div class="movements__row">
       <div class="movements__type movements__type--${moveType}">${i + 1}: ${moveType}</div>
-      <div class="movements__value">${move}€</div>
+      <div class="movements__value">${moveType === "deposit" ? moneyDisplayFormatter(move, "€ ") : "€ " + move.toFixed(2)}</div>
     </div>
   `;
 
@@ -92,11 +101,6 @@ const createUsernames = (accs) =>
   );
 createUsernames(accounts);
 
-function moneyDisplayFormatter(n, currency) {
-  return currency + n.toFixed(2).replace(/./g, function(c, i, a) {
-    return i > 0 && c !== "." && (a.length - i) % 3 === 0 ? "," + c : c;
-  });
-}
 
 const countBalance = (acc) => {
   acc.balance = acc.movements.reduce((acc, curr) => acc + curr, 0);
@@ -141,7 +145,7 @@ btnLogin.addEventListener("click", (e) => {
   e.preventDefault();
   // Login Validation
   currentAccount = accounts.find(acc => acc.username === inputLoginUsername.value);
-  if (currentAccount?.pin === Number(inputLoginPin.value)) {
+  if (currentAccount?.pin === +inputLoginPin.value) {
     // Clean up inputs after login and lose focus from input
     inputLoginUsername.value = "";
     inputLoginPin.value = "";
@@ -161,7 +165,7 @@ btnLogin.addEventListener("click", (e) => {
 // Money Transfer handler
 btnTransfer.addEventListener("click", function(e) {
   e.preventDefault();
-  const amount = Number(inputTransferAmount.value);
+  const amount = +inputTransferAmount.value;
   const receiver = accounts.find(acc => acc.username === inputTransferTo.value);
   // Pre Transfer validation
   if (amount > 0 &&
@@ -184,7 +188,7 @@ btnTransfer.addEventListener("click", function(e) {
 // Close account handler (delete account)
 btnClose.addEventListener("click", function(e) {
   e.preventDefault();
-  if (currentAccount.username === inputCloseUsername.value && currentAccount.pin === Number(inputClosePin.value)) {
+  if (currentAccount.username === inputCloseUsername.value && currentAccount.pin === +inputClosePin.value) {
     console.log(`deleted account: ${currentAccount.owner} `);
     const index = accounts.findIndex(acc => acc.username === currentAccount.username);
     accounts.splice(index, 1);
@@ -202,7 +206,7 @@ btnClose.addEventListener("click", function(e) {
 
 btnLoan.addEventListener("click", (e) => {
   e.preventDefault();
-  const amount = Number(inputLoanAmount.value);
+  const amount = Math.floor(inputLoanAmount.value);
 
   if (amount > 0 && currentAccount.movements.some(move => move >= amount * 0.1)) {
     currentAccount.movements.push(amount);
