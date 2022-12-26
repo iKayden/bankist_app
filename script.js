@@ -173,9 +173,40 @@ btnTransfer.addEventListener("click", function(e) {
     updateUi(currentAccount);
 
   }
-  //clean up inputs and unfocus last input
+  //clean up inputs and unfocus from last input
   inputTransferTo.value = "";
   inputTransferAmount.value = "";
   inputTransferAmount.blur();
+});
 
+// Close account handler (delete account)
+btnClose.addEventListener("click", function(e) {
+  e.preventDefault();
+  if (currentAccount.username === inputCloseUsername.value && currentAccount.pin === Number(inputClosePin.value)) {
+    console.log(`deleted account: ${currentAccount.owner} `);
+    const index = accounts.findIndex(acc => acc.username === currentAccount.username);
+    accounts.splice(index, 1);
+
+    //clean up inputs and unfocus from last input
+    inputCloseUsername.value = "";
+    inputClosePin.value = "";
+    inputClosePin.blur();
+
+    // Logout functionality
+    containerApp.style.opacity = 0;
+    labelWelcome.textContent = "Log in to get started";
+  }
+});;
+
+btnLoan.addEventListener("click", (e) => {
+  e.preventDefault();
+  const amount = Number(inputLoanAmount.value);
+
+  if (amount > 0 && currentAccount.movements.some(move => move >= amount * 0.1)) {
+    currentAccount.movements.push(amount);
+    updateUi(currentAccount);
+
+  }
+  inputLoanAmount.value = "";
+  inputLoanAmount.blur();
 });
