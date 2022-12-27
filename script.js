@@ -19,7 +19,7 @@ const account1 = {
     '2022-12-28T09:15:04.904Z',
   ],
   currency: 'EUR',
-  locale: 'pt-PT', // de-DE
+  locale: 'en-GB',
 };
 
 const account2 = {
@@ -74,13 +74,15 @@ const inputClosePin = document.querySelector('.form__input--pin');
 //////////////////////////////////////////////////////////////////////
 //Functions
 
-function moneyDisplayFormatter(n, currency) {
-  return currency + n.toFixed(2).replace(/./g, function(c, i, a) {
-    return i > 0 && c !== "." && (a.length - i) % 3 === 0 ? "," + c : c;
-  });
-}
+const moneyDisplayFormatter = (value, locale, currency) => {
+  // currency display formatting
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: currency
+  }).format(value);
+};
 
-const formatMovementDate = (date) => {
+const formatMovementDate = (date, locale) => {
 
   const calcDaysPassed = (date1, date2) => Math.round(Math.abs(date2 - date1) / (1000 * 60 * 60 * 24));
   const daysPassed = calcDaysPassed(new Date(), date);
@@ -89,26 +91,26 @@ const formatMovementDate = (date) => {
   if (daysPassed === 1) return "Yesterday";
   if (daysPassed <= 7) return `${daysPassed} days ago`;
 
-  const day = doubleDigitTime(date.getDate());
-  const month = doubleDigitTime(date.getMonth() + 1);
-  const year = date.getFullYear();
-  return `${day}/${month}/${year}`;
+  return new Intl.DateTimeFormat(locale).format(date);
 };
 
 const displayMovements = function(acc, sort = false) {
   containerMovements.innerHTML = "";
   const moves = sort ? acc.movements.slice().sort((a, b) => a - b) : acc.movements;
+  //html generating loop start
   moves.forEach((move, i) => {
     const moveType = move > 0 ? "deposit" : "withdrawal";
     // displaying dates functionality
     const date = new Date(acc.movementsDates[i]);
-    const displayDate = formatMovementDate(date);
+    const displayDate = formatMovementDate(date, acc.locale);
+
+    const formattedMov = moneyDisplayFormatter(move, acc.locale, acc.currency);
 
     const html = `
     <div class="movements__row">
       <div class="movements__type movements__type--${moveType}">${i + 1}: ${moveType}</div>
       <div class="movements__date">${displayDate}</div>
-      <div class="movements__value">${moveType === "deposit" ? moneyDisplayFormatter(move, "€ ") : "€ " + move.toFixed(2)}</div>
+      <div class="movements__value">${formattedMov}</div>
     </div>
   `;
 
@@ -132,28 +134,28 @@ createUsernames(accounts);
 
 const countBalance = (acc) => {
   acc.balance = acc.movements.reduce((acc, curr) => acc + curr, 0);
-  labelBalance.textContent = `${moneyDisplayFormatter(acc.balance, "€ ")}`;
+  labelBalance.textContent = `${moneyDisplayFormatter(acc.balance, acc.locale, acc.currency)}`;
 };
 
 
-const calcDisplaySum = (account) => {
+const calcDisplaySum = (acc) => {
 
-  const incomes = account.movements
+  const incomes = acc.movements
     .filter(move => move > 0)
     .reduce((acc, move) => acc + move, 0);
-  labelSumIn.textContent = `${moneyDisplayFormatter(incomes, "€ ")}`;
+  labelSumIn.textContent = `${moneyDisplayFormatter(incomes, acc.locale, acc.currency)}`;
 
-  const outcomes = account.movements
+  const outcomes = acc.movements
     .filter(move => move < 0)
     .reduce((acc, move) => acc + move, 0);
-  labelSumOut.textContent = `${moneyDisplayFormatter(Math.abs(outcomes), "€ ")}`;
+  labelSumOut.textContent = `${moneyDisplayFormatter(Math.abs(outcomes), acc.locale, acc.currency)}`;
 
-  const interest = account.movements
+  const interest = acc.movements
     .filter(move => move > 0)
-    .map(deposit => deposit * account.interestRate / 100)
+    .map(deposit => deposit * acc.interestRate / 100)
     .filter(int => int >= 1)
     .reduce((acc, int) => acc + int, 0);
-  labelSumInterest.textContent = `${moneyDisplayFormatter(interest, "€ ")}`;
+  labelSumInterest.textContent = `${moneyDisplayFormatter(interest, acc.locale, acc.currency)}`;
 };
 
 const updateUi = (acc) => {
@@ -193,13 +195,18 @@ btnLogin.addEventListener("click", (e) => {
     containerApp.style.opacity = 100;
 
     // Create a display of today's date -> d/m/y
+    // API for dates
     const now = new Date();
-    const day = doubleDigitTime(now.getDate());
-    const month = doubleDigitTime(now.getMonth() + 1);
-    const year = now.getFullYear();
-    const hour = doubleDigitTime(now.getHours());
-    const minutes = doubleDigitTime(now.getMinutes());
-    labelDate.textContent = `${day}/${month}/${year}, ${hour}:${minutes}`;
+    const options = {
+      hour: "numeric",
+      minute: "numeric",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      weekday: "long"
+    };
+
+    labelDate.textContent = new Intl.DateTimeFormat(currentAccount.locale, options).format(now);
     //refresh interface
     updateUi(currentAccount);
 
