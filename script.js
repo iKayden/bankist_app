@@ -56,6 +56,7 @@ const labelTimer = document.querySelector('.timer');
 const containerApp = document.querySelector('.app');
 const containerMovements = document.querySelector('.movements');
 const containerMovementsTime = document.querySelector('.movements__date');
+const containerClock = document.querySelector('.clock');
 
 const btnLogin = document.querySelector('.login__btn');
 const btnTransfer = document.querySelector('.form__btn--transfer');
@@ -118,8 +119,6 @@ const displayMovements = function(acc, sort = false) {
   });
 };
 
-
-
 const createUsernames = (accs) =>
   accs.forEach(
     acc => acc.username =
@@ -131,12 +130,10 @@ const createUsernames = (accs) =>
   );
 createUsernames(accounts);
 
-
 const countBalance = (acc) => {
   acc.balance = acc.movements.reduce((acc, curr) => acc + curr, 0);
   labelBalance.textContent = `${moneyDisplayFormatter(acc.balance, acc.locale, acc.currency)}`;
 };
-
 
 const calcDisplaySum = (acc) => {
 
@@ -209,9 +206,6 @@ btnLogin.addEventListener("click", (e) => {
     labelDate.textContent = new Intl.DateTimeFormat(currentAccount.locale, options).format(now);
     //refresh interface
     updateUi(currentAccount);
-
-
-
   }
 });
 
@@ -267,10 +261,13 @@ btnLoan.addEventListener("click", (e) => {
   const amount = Math.floor(inputLoanAmount.value);
 
   if (amount > 0 && currentAccount.movements.some(move => move >= amount * 0.1)) {
-    currentAccount.movements.push(amount);
-    currentAccount.movementsDates.push(new Date().toISOString());
-    updateUi(currentAccount);
+    setTimeout(function() {
+      currentAccount.movements.push(amount);
+      currentAccount.movementsDates.push(new Date().toISOString());
+      updateUi(currentAccount);
 
+    }, 3000);
+    console.log(`Waiting for a (${moneyDisplayFormatter(amount, currentAccount.locale, currentAccount.currency)}) loan approval.....`);
   }
   inputLoanAmount.value = "";
   inputLoanAmount.blur();
@@ -284,3 +281,18 @@ btnSort.addEventListener("click", (e) => {
   displayMovements(currentAccount, !setSort);
   setSort = !setSort;
 });
+
+// setInterval clock
+const clock = (interval) => {
+  setInterval(() => {
+
+    const now = new Date();
+    const options = {
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric"
+    };
+    containerClock.textContent = new Intl.DateTimeFormat(currentAccount.locale, options).format(now);
+  }, interval);
+};
+clock(1000);
