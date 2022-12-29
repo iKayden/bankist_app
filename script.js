@@ -52,6 +52,7 @@ const labelSumIn = document.querySelector('.summary__value--in');
 const labelSumOut = document.querySelector('.summary__value--out');
 const labelSumInterest = document.querySelector('.summary__value--interest');
 const labelTimer = document.querySelector('.timer');
+const logoutTimer = document.querySelector('.logout-timer');
 
 const containerApp = document.querySelector('.app');
 const containerMovements = document.querySelector('.movements');
@@ -168,14 +169,7 @@ const updateUi = (acc) => {
 const doubleDigitTime = (time) => `${time}`.padStart(2, 0);
 
 // Login event handler
-let currentAccount;
-
-// FAKE LOGGED IN
-currentAccount = account1;
-updateUi(currentAccount);
-containerApp.style.opacity = 100;
-/////////////////////////
-
+let currentAccount, timer;
 
 btnLogin.addEventListener("click", (e) => {
   e.preventDefault();
@@ -204,6 +198,9 @@ btnLogin.addEventListener("click", (e) => {
     };
 
     labelDate.textContent = new Intl.DateTimeFormat(currentAccount.locale, options).format(now);
+    // timer logic (reset timer if exists)
+    if (timer) clearInterval(timer);
+    timer = startLogoutTimer();
     //refresh interface
     updateUi(currentAccount);
   }
@@ -227,7 +224,9 @@ btnTransfer.addEventListener("click", function(e) {
     receiver.movementsDates.push(new Date().toISOString());
 
     updateUi(currentAccount);
-
+    //reset the timer
+    clearInterval(timer);
+    timer = startLogoutTimer();
   }
   //clean up inputs and unfocus from last input
   inputTransferTo.value = "";
@@ -271,6 +270,10 @@ btnLoan.addEventListener("click", (e) => {
   }
   inputLoanAmount.value = "";
   inputLoanAmount.blur();
+
+  //reset the timer
+  clearInterval(timer);
+  timer = startLogoutTimer();
 });
 
 // Sorting movements handler
@@ -293,6 +296,32 @@ const clock = (interval) => {
       second: "numeric"
     };
     containerClock.textContent = new Intl.DateTimeFormat(currentAccount.locale, options).format(now);
+    containerClock.style.borderBottom = "2px solid #666";
   }, interval);
 };
 clock(1000);
+
+// Logout timer (5m)
+
+const startLogoutTimer = () => {
+  logoutTimer.style.opacity = 100;
+  let time = 300;
+  const tick = () => {
+    const min = String(Math.trunc(time / 60)).padStart(2, 0);
+    const sec = String(Math.trunc(time % 60)).padStart(2, 0);
+    labelTimer.textContent = `${min}:${sec}`;
+    if (time === 0) {
+      clearInterval(timer);
+      // Logout functionality
+      containerApp.style.opacity = 0;
+      logoutTimer.style.opacity = 0;
+      labelWelcome.textContent = "Log in to get started";
+      alert("Due to inactivity you've been logged out");
+    }
+    time--;
+  };
+  // workaround to start the countdown of the timer immediately
+  tick();
+  const timer = setInterval(tick, 1000);
+  return timer;
+};

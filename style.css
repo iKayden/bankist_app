@@ -38,8 +38,8 @@ nav {
 .clock {
   font-size: 1.9rem;
   font-weight: 500;
-  border-bottom: 2px solid #666;
-  width: 73px;
+
+  width: auto;
 }
 
 .logo {
@@ -301,4 +301,8 @@ h2 {
 
 .timer {
   font-weight: 600;
+}
+
+.logout-timer {
+  opacity: 0%;
 }
